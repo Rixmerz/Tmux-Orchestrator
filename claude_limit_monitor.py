@@ -88,48 +88,103 @@ class ClaudeLimitMonitor:
         wait_time = reset_time - now
         return int(wait_time.total_seconds() / 60)
     
+    def is_claude_window(self, session_name: str, window_index: int) -> bool:
+        """Check if a window likely contains Claude by looking for common indicators."""
+        content = self.capture_window_content(session_name, window_index, lines=10)
+        if not content:
+            return False
+
+        # Look for Claude indicators in recent content
+        claude_indicators = [
+            "claude",
+            "anthropic",
+            "assistant",
+            "I'm Claude",
+            "How can I help",
+            "I'll help you",
+            "usage limit",
+            "continue"
+        ]
+
+        content_lower = content.lower()
+        return any(indicator in content_lower for indicator in claude_indicators)
+
     def send_continue_to_all_sessions(self):
         """Send 'continue' + Enter to all Claude sessions."""
         sessions = self.get_all_sessions()
         continued_count = 0
-        
+
+        print(f"🔍 Checking {len(sessions)} sessions for Claude windows...")
+
         for session_name in sessions:
             windows = self.get_session_windows(session_name)
+            session_continued = 0
+
             for window_index in windows:
-                try:
-                    # Send 'continue'
-                    subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "continue"])
-                    time.sleep(0.5)
-                    # Send Enter
-                    subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "Enter"])
-                    continued_count += 1
-                    print(f"✅ Sent 'continue' to {session_name}:{window_index}")
-                except subprocess.CalledProcessError as e:
-                    print(f"❌ Error sending to {session_name}:{window_index}: {e}")
-        
-        print(f"🚀 Sent 'continue' to {continued_count} windows across {len(sessions)} sessions")
+                # Only send to windows that likely contain Claude
+                if self.is_claude_window(session_name, window_index):
+                    try:
+                        # Send 'continue'
+                        subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "continue"])
+                        time.sleep(0.5)
+                        # Send Enter
+                        subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "Enter"])
+                        continued_count += 1
+                        session_continued += 1
+                        print(f"✅ Sent 'continue' to {session_name}:{window_index}")
+
+                        # Add a small delay between windows to avoid overwhelming
+                        time.sleep(1.0)
+
+                    except subprocess.CalledProcessError as e:
+                        print(f"❌ Error sending to {session_name}:{window_index}: {e}")
+                else:
+                    print(f"⏭️  Skipped {session_name}:{window_index} (not Claude)")
+
+            if session_continued > 0:
+                print(f"📊 Session '{session_name}': {session_continued} Claude windows continued")
+
+        print(f"🚀 Total: Sent 'continue' to {continued_count} Claude windows across {len(sessions)} sessions")
     
     def schedule_continuation(self, wait_minutes: int, reset_time_str: str):
         """Schedule continuation using the existing scheduling system."""
-        schedule_script = os.path.join(self.script_dir, "schedule_with_note.sh")
-        
-        if not os.path.exists(schedule_script):
-            print(f"❌ Schedule script not found: {schedule_script}")
+        # Create a lock file to prevent multiple scheduling
+        lock_file = os.path.join(self.script_dir, ".claude_limit_scheduled")
+
+        if os.path.exists(lock_file):
+            print(f"⚠️  Continuation already scheduled (lock file exists)")
             return False
-        
+
+        # Create lock file
+        try:
+            with open(lock_file, 'w') as f:
+                f.write(f"Scheduled at {datetime.now().isoformat()}\n")
+                f.write(f"Reset time: {reset_time_str}\n")
+                f.write(f"Wait minutes: {wait_minutes}\n")
+        except Exception as e:
+            print(f"❌ Error creating lock file: {e}")
+            return False
+
         # Create a note for the scheduled continuation
         note = f"Claude limit reset at {reset_time_str} - Auto-continuing all sessions"
-        
+
         try:
-            # Use nohup to schedule the continuation
-            cmd = f'nohup bash -c "sleep {wait_minutes * 60} && python3 {os.path.join(self.script_dir, "claude_limit_monitor.py")} --continue-all" > /dev/null 2>&1 &'
+            # Use nohup to schedule the continuation with lock cleanup
+            script_path = os.path.join(self.script_dir, "claude_limit_monitor.py")
+            cmd = f'nohup bash -c "sleep {wait_minutes * 60} && rm -f {lock_file} && python3 {script_path} --continue-all" > /dev/null 2>&1 &'
             subprocess.run(cmd, shell=True, check=True)
-            
+
             reset_time = datetime.now() + timedelta(minutes=wait_minutes)
             print(f"⏰ Scheduled continuation for {reset_time.strftime('%H:%M:%S')} ({wait_minutes} minutes)")
             print(f"📝 Note: {note}")
+            print(f"🔒 Lock file created: {lock_file}")
             return True
         except subprocess.CalledProcessError as e:
+            # Clean up lock file if scheduling failed
+            try:
+                os.remove(lock_file)
+            except:
+                pass
             print(f"❌ Error scheduling continuation: {e}")
             return False
     
@@ -189,15 +244,27 @@ def main():
             monitor = ClaudeLimitMonitor()
             monitor.send_continue_to_all_sessions()
             return
+        elif sys.argv[1] == "--clear-lock":
+            # Clear the scheduling lock file
+            monitor = ClaudeLimitMonitor()
+            lock_file = os.path.join(monitor.script_dir, ".claude_limit_scheduled")
+            if os.path.exists(lock_file):
+                os.remove(lock_file)
+                print("🔓 Lock file cleared")
+            else:
+                print("ℹ️  No lock file found")
+            return
         elif sys.argv[1] in ["--help", "-h"]:
             print("Claude Limit Monitor")
             print("Usage:")
             print("  python3 claude_limit_monitor.py [check_interval]")
             print("  python3 claude_limit_monitor.py --continue-all")
+            print("  python3 claude_limit_monitor.py --clear-lock")
             print("")
             print("Arguments:")
             print("  check_interval    Seconds between checks (default: 30)")
             print("  --continue-all    Send 'continue' to all Claude sessions")
+            print("  --clear-lock      Clear scheduling lock file")
             print("")
             print("Examples:")
             print("  python3 claude_limit_monitor.py 60    # Check every 60 seconds")
