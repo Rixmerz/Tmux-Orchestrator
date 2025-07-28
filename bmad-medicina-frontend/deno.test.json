@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
+  },
+  "imports": {
+    "@std/testing": "https://deno.land/std@0.208.0/testing/",
+    "@std/assert": "https://deno.land/std@0.208.0/assert/",
+    "playwright": "https://deno.land/x/playwright@1.40.0/mod.ts",
+    "axe-core": "https://deno.land/x/axe_core@4.8.2/mod.ts"
+  },
+  "tasks": {
+    "test": "deno test --allow-all",
+    "test:unit": "deno test --allow-all tests/unit/",
+    "test:integration": "deno test --allow-all tests/integration/",
+    "test:e2e": "deno test --allow-all tests/e2e/",
+    "test:security": "deno test --allow-all tests/security/",
+    "test:accessibility": "deno test --allow-all tests/accessibility/",
+    "test:coverage": "deno test --allow-all --coverage=coverage/",
+    "test:watch": "deno test --allow-all --watch"
+  }
+}

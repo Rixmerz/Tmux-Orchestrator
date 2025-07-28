@@ -1,0 +1,37 @@
+{
+  "lock": false,
+  "tasks": {
+    "check": "deno fmt --check && deno lint && deno check **/*.ts",
+    "start": "deno run -A --watch src/main.ts",
+    "dev": "deno run -A --watch src/main.ts",
+    "test": "deno test -A tests/",
+    "coverage": "deno test -A --coverage=coverage tests/ && deno coverage coverage",
+    "lint": "deno lint src/ tests/",
+    "fmt": "deno fmt src/ tests/"
+  },
+  "imports": {
+    "@oak/oak": "https://deno.land/x/oak@v15.0.0/mod.ts",
+    "@oak/cors": "https://deno.land/x/cors@v1.2.2/mod.ts",
+    "@djwt/": "https://deno.land/x/djwt@v3.0.2/",
+    "@std/": "https://deno.land/std@0.216.0/",
+    "@crypto": "https://deno.land/std@0.216.0/crypto/mod.ts",
+    "@datetime": "https://deno.land/std@0.216.0/datetime/mod.ts",
+    "@uuid": "https://deno.land/std@0.216.0/uuid/v4.ts",
+    "@validation": "https://deno.land/x/zod@v3.22.4/mod.ts",
+    "@testing": "https://deno.land/std@0.216.0/testing/asserts.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "deno.unstable"],
+    "strict": false
+  },
+  "fmt": {
+    "files": {
+      "include": ["src/", "tests/"]
+    }
+  },
+  "lint": {
+    "files": {
+      "include": ["src/", "tests/"]
+    }
+  }
+}

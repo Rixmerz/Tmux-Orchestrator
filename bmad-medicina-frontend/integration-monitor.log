@@ -1,0 +1,44 @@
+[0;34mℹ️  [16:28:41] INFO[0m: Starting live integration monitoring
+[0;32m✅ [16:28:41] PASS[0m: Backend server responding on http://localhost:8080
+[0;36m🧪 [16:28:41] TEST[0m: Testing API integration with medication data
+[0;32m✅ [16:28:41] PASS[0m: Medications API: 1 medications available
+[0;32m✅ [16:28:41] PASS[0m: Sample medication: Aspirina - Tomar con alimentos
+[0;36m🧪 [16:28:41] TEST[0m: Testing QR scanner data flow preparation
+[0;32m✅ [16:28:41] PASS[0m: QR codes present in medication data: QR123456789
+[1;33m⚠️  [16:28:41] WAIT[0m: QR scanning endpoint not implemented yet (expected)
+[0;36m🧪 [16:28:41] TEST[0m: Validating senior UX data structure
+[0;32m✅ [16:28:41] PASS[0m: Clear instructions for seniors: 'Tomar con alimentos'
+[0;32m✅ [16:28:41] PASS[0m: Safety warnings present: 'No usar con anticoagulantes'
+[0;32m✅ [16:28:41] PASS[0m: Side effects information: 'Malestar estomacal'
+[0;36m🧪 [16:28:41] TEST[0m: Testing Ley 19.628 security compliance readiness
+[0;32m✅ [16:28:41] PASS[0m: Security headers present in API responses
+[0;32m✅ [16:28:41] PASS[0m: No obvious sensitive data exposure in medication API
+[0;34mℹ️  [16:28:41] INFO[0m: HTTPS enforcement should be enabled in production
+[1;33m⚠️  [16:28:41] WAIT[0m: Privacy endpoint /api/privacy/consent not implemented yet
+[1;33m⚠️  [16:28:41] WAIT[0m: Privacy endpoint /api/privacy/data-access not implemented yet
+[1;33m⚠️  [16:28:41] WAIT[0m: Privacy endpoint /api/audit/log not implemented yet
+[0;36m🧪 [16:28:41] TEST[0m: Monitoring frontend connection to backend
+[1;33m⚠️  [16:28:41] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:28:41] WAIT[0m: Waiting for frontend startup... (attempt 1/12)
+[1;33m⚠️  [16:28:51] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:28:52] WAIT[0m: Waiting for frontend startup... (attempt 2/12)
+[1;33m⚠️  [16:29:02] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:02] WAIT[0m: Waiting for frontend startup... (attempt 3/12)
+[1;33m⚠️  [16:29:12] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:12] WAIT[0m: Waiting for frontend startup... (attempt 4/12)
+[1;33m⚠️  [16:29:22] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:22] WAIT[0m: Waiting for frontend startup... (attempt 5/12)
+[1;33m⚠️  [16:29:32] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:32] WAIT[0m: Waiting for frontend startup... (attempt 6/12)
+[1;33m⚠️  [16:29:42] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:42] WAIT[0m: Waiting for frontend startup... (attempt 7/12)
+[1;33m⚠️  [16:29:52] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:29:52] WAIT[0m: Waiting for frontend startup... (attempt 8/12)
+[1;33m⚠️  [16:30:02] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:30:02] WAIT[0m: Waiting for frontend startup... (attempt 9/12)
+[1;33m⚠️  [16:30:12] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:30:12] WAIT[0m: Waiting for frontend startup... (attempt 10/12)
+[1;33m⚠️  [16:30:22] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:30:22] WAIT[0m: Waiting for frontend startup... (attempt 11/12)
+[1;33m⚠️  [16:30:32] WAIT[0m: Frontend server not responding on http://localhost:8000
+[1;33m⚠️  [16:30:32] WAIT[0m: Waiting for frontend startup... (attempt 12/12)

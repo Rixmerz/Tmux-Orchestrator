@@ -40,18 +40,22 @@ class TestContinueCommandVerification(unittest.TestCase):
         # Mock window content - some with Claude, some without
         self.mock_content = {
             "session1:0": "I'm Claude, an AI assistant. How can I help you today?",
-            "session1:1": "bash-5.1$ ls -la\ntotal 16",  # Not Claude
+            "session1:1": "bash-5.1$ ls -la\ntotal 16\ndrwxr-xr-x 2 user user 4096",  # Not Claude
             "session1:2": "Claude usage limit reached. Your limit will reset at 2pm",
-            "session2:0": "How can I help you with your project?",  # Claude
-            "session2:1": "vim editor - editing file.py",  # Not Claude
-            "session3:0": "I'll help you with that task. Let me continue working..."  # Claude
+            "session2:0": "I'm Claude. How can I help you with your project?",  # Claude
+            "session2:1": "vim editor - editing file.py\n:wq to save and quit",  # Not Claude
+            "session3:0": "I'm Claude, I'll help you with that task."  # Claude
         }
 
     @patch('claude_limit_monitor.subprocess.run')
     @patch('claude_limit_monitor.time.sleep')  # Mock sleep to speed up tests
-    def test_exact_continue_command_sent(self, mock_sleep, mock_subprocess):
-        """Test that exactly '--continue' is sent, not 'continue' or duplicated."""
-        
+    @patch('claude_limit_monitor.os.path.exists')  # Mock send-claude-message.sh existence
+    def test_exact_continue_command_sent(self, mock_exists, mock_sleep, mock_subprocess):
+        """Test that exactly '--continue' is sent via send-claude-message.sh."""
+
+        # Mock that send-claude-message.sh exists
+        mock_exists.return_value = True
+
         # Mock subprocess responses
         def mock_subprocess_side_effect(cmd, **kwargs):
             if cmd[0] == "tmux" and cmd[1] == "list-sessions":
@@ -71,10 +75,12 @@ class TestContinueCommandVerification(unittest.TestCase):
                 result.stdout = self.mock_content.get(target, "")
                 result.returncode = 0
                 return result
-            elif cmd[0] == "tmux" and cmd[1] == "send-keys":
-                # Just return success for send-keys commands
+            elif cmd[0].endswith("send-claude-message.sh"):
+                # Mock send-claude-message.sh calls
                 result = MagicMock()
                 result.returncode = 0
+                result.stdout = f"Message sent to {cmd[1]}: {cmd[2]}"
+                result.stderr = ""
                 return result
             else:
                 raise subprocess.CalledProcessError(1, cmd)
@@ -84,52 +90,53 @@ class TestContinueCommandVerification(unittest.TestCase):
         # Execute the function under test
         self.monitor.send_continue_to_all_sessions()
 
-        # Collect all send-keys calls
-        send_keys_calls = [call for call in mock_subprocess.call_args_list 
-                          if len(call[0]) > 0 and len(call[0][0]) > 2 and 
-                          call[0][0][0] == "tmux" and call[0][0][1] == "send-keys"]
+        # Collect all send-claude-message.sh calls
+        send_message_calls = [call for call in mock_subprocess.call_args_list
+                             if len(call[0]) > 0 and len(call[0][0]) > 0 and
+                             call[0][0][0].endswith("send-claude-message.sh")]
 
         # Expected Claude windows based on mock content
         expected_claude_windows = ["session1:0", "session1:2", "session2:0", "session3:0"]
-        
-        # Verify each Claude window gets exactly one --continue and one Enter
-        continue_commands = []
-        enter_commands = []
-        
-        for call_args in send_keys_calls:
+
+        # Verify each Claude window gets exactly one --continue call
+        continue_targets = []
+        continue_messages = []
+
+        for call_args in send_message_calls:
             cmd = call_args[0][0]  # The command list
-            if len(cmd) >= 5 and cmd[4] == "--continue":
-                continue_commands.append(cmd[3])  # target session:window
-            elif len(cmd) >= 5 and cmd[4] == "Enter":
-                enter_commands.append(cmd[3])  # target session:window
+            if len(cmd) >= 3:
+                target = cmd[1]  # session:window
+                message = cmd[2]  # the message
+                continue_targets.append(target)
+                continue_messages.append(message)
 
         # Verify exactly the expected windows received --continue
-        self.assertEqual(sorted(continue_commands), sorted(expected_claude_windows),
-                        "Not all Claude windows received --continue command")
-        
-        # Verify exactly the expected windows received Enter
-        self.assertEqual(sorted(enter_commands), sorted(expected_claude_windows),
-                        "Not all Claude windows received Enter command")
-        
-        # Verify no duplications - each window should appear exactly once
-        self.assertEqual(len(continue_commands), len(set(continue_commands)),
-                        "Duplicate --continue commands detected")
-        self.assertEqual(len(enter_commands), len(set(enter_commands)),
-                        "Duplicate Enter commands detected")
+        self.assertEqual(sorted(continue_targets), sorted(expected_claude_windows),
+                        "Not all Claude windows received --continue command via send-claude-message.sh")
 
-        # Verify the exact command is "--continue", not "continue"
-        for call_args in send_keys_calls:
-            cmd = call_args[0][0]
-            if len(cmd) >= 5 and cmd[4] not in ["Enter"]:
-                self.assertEqual(cmd[4], "--continue", 
-                               f"Wrong command sent: {cmd[4]}, expected '--continue'")
+        # Verify no duplications - each window should appear exactly once
+        self.assertEqual(len(continue_targets), len(set(continue_targets)),
+                        "Duplicate --continue commands detected")
+
+        # Verify the exact message is "--continue", not "continue"
+        for message in continue_messages:
+            self.assertEqual(message, "--continue",
+                           f"Wrong message sent: {message}, expected '--continue'")
+
+        # Verify we have the expected number of calls
+        self.assertEqual(len(send_message_calls), len(expected_claude_windows),
+                        f"Expected {len(expected_claude_windows)} calls, got {len(send_message_calls)}")
 
     @patch('claude_limit_monitor.subprocess.run')
     @patch('claude_limit_monitor.time.sleep')
-    def test_no_commands_to_non_claude_windows(self, mock_sleep, mock_subprocess):
+    @patch('claude_limit_monitor.os.path.exists')
+    def test_no_commands_to_non_claude_windows(self, mock_exists, mock_sleep, mock_subprocess):
         """Test that non-Claude windows don't receive any commands."""
-        
-        # Mock subprocess responses (same as above)
+
+        # Mock that send-claude-message.sh exists
+        mock_exists.return_value = True
+
+        # Mock subprocess responses
         def mock_subprocess_side_effect(cmd, **kwargs):
             if cmd[0] == "tmux" and cmd[1] == "list-sessions":
                 result = MagicMock()
@@ -148,12 +155,14 @@ class TestContinueCommandVerification(unittest.TestCase):
                 if target == "session1:0":
                     result.stdout = "I'm Claude, how can I help?"
                 else:
-                    result.stdout = "bash-5.1$ echo 'no claude here'"
+                    result.stdout = "bash-5.1$ ls -la\ntotal 16\ndrwxr-xr-x 2 user user 4096"
                 result.returncode = 0
                 return result
-            elif cmd[0] == "tmux" and cmd[1] == "send-keys":
+            elif cmd[0].endswith("send-claude-message.sh"):
                 result = MagicMock()
                 result.returncode = 0
+                result.stdout = f"Message sent to {cmd[1]}: {cmd[2]}"
+                result.stderr = ""
                 return result
 
         mock_subprocess.side_effect = mock_subprocess_side_effect
@@ -161,21 +170,21 @@ class TestContinueCommandVerification(unittest.TestCase):
         # Execute the function
         self.monitor.send_continue_to_all_sessions()
 
-        # Collect send-keys calls
-        send_keys_calls = [call for call in mock_subprocess.call_args_list 
-                          if len(call[0]) > 0 and len(call[0][0]) > 2 and 
-                          call[0][0][0] == "tmux" and call[0][0][1] == "send-keys"]
+        # Collect send-claude-message.sh calls
+        send_message_calls = [call for call in mock_subprocess.call_args_list
+                             if len(call[0]) > 0 and len(call[0][0]) > 0 and
+                             call[0][0][0].endswith("send-claude-message.sh")]
 
         # Should only have commands for session1:0 (the Claude window)
         targets = []
-        for call_args in send_keys_calls:
+        for call_args in send_message_calls:
             cmd = call_args[0][0]
-            if len(cmd) >= 4:
-                targets.append(cmd[3])  # target session:window
+            if len(cmd) >= 2:
+                targets.append(cmd[1])  # target session:window
 
         # All commands should be to session1:0 only
         for target in targets:
-            self.assertEqual(target, "session1:0", 
+            self.assertEqual(target, "session1:0",
                            f"Command sent to non-Claude window: {target}")
 
     @patch('claude_limit_monitor.subprocess.run')
@@ -230,8 +239,12 @@ class TestContinueCommandVerification(unittest.TestCase):
 
     @patch('claude_limit_monitor.subprocess.run')
     @patch('claude_limit_monitor.time.sleep')
-    def test_multiple_sessions_no_cross_contamination(self, mock_sleep, mock_subprocess):
+    @patch('claude_limit_monitor.os.path.exists')
+    def test_multiple_sessions_no_cross_contamination(self, mock_exists, mock_sleep, mock_subprocess):
         """Test that commands don't get sent to wrong sessions."""
+
+        # Mock that send-claude-message.sh exists
+        mock_exists.return_value = True
 
         def mock_subprocess_side_effect(cmd, **kwargs):
             if cmd[0] == "tmux" and cmd[1] == "list-sessions":
@@ -256,9 +269,11 @@ class TestContinueCommandVerification(unittest.TestCase):
                     result.stdout = f"Regular terminal in {target}"
                 result.returncode = 0
                 return result
-            elif cmd[0] == "tmux" and cmd[1] == "send-keys":
+            elif cmd[0].endswith("send-claude-message.sh"):
                 result = MagicMock()
                 result.returncode = 0
+                result.stdout = f"Message sent to {cmd[1]}: {cmd[2]}"
+                result.stderr = ""
                 return result
 
         mock_subprocess.side_effect = mock_subprocess_side_effect
@@ -267,15 +282,15 @@ class TestContinueCommandVerification(unittest.TestCase):
         self.monitor.send_continue_to_all_sessions()
 
         # Verify commands were sent to correct targets only
-        send_keys_calls = [call for call in mock_subprocess.call_args_list
-                          if len(call[0]) > 0 and len(call[0][0]) > 2 and
-                          call[0][0][0] == "tmux" and call[0][0][1] == "send-keys"]
+        send_message_calls = [call for call in mock_subprocess.call_args_list
+                             if len(call[0]) > 0 and len(call[0][0]) > 0 and
+                             call[0][0][0].endswith("send-claude-message.sh")]
 
         targets = set()
-        for call_args in send_keys_calls:
+        for call_args in send_message_calls:
             cmd = call_args[0][0]
-            if len(cmd) >= 4:
-                targets.add(cmd[3])
+            if len(cmd) >= 2:
+                targets.add(cmd[1])  # target session:window
 
         # Should only target the Claude windows
         expected_targets = {"session_a:0", "session_b:0"}

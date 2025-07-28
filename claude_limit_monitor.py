@@ -110,11 +110,20 @@ class ClaudeLimitMonitor:
         return any(indicator in content_lower for indicator in claude_indicators)
 
     def send_continue_to_all_sessions(self):
-        """Send '--continue' + Enter to all Claude sessions."""
+        """Send '--continue' + Enter to all Claude sessions using send-claude-message.sh."""
         sessions = self.get_all_sessions()
         continued_count = 0
 
         print(f"🔍 Checking {len(sessions)} sessions for Claude windows...")
+
+        # Path to send-claude-message.sh script
+        send_script = os.path.join(self.script_dir, "send-claude-message.sh")
+
+        if not os.path.exists(send_script):
+            print(f"❌ send-claude-message.sh not found at {send_script}")
+            print("   Falling back to direct tmux commands...")
+            self._send_continue_direct()
+            return
 
         for session_name in sessions:
             windows = self.get_session_windows(session_name)
@@ -124,16 +133,55 @@ class ClaudeLimitMonitor:
                 # Only send to windows that likely contain Claude
                 if self.is_claude_window(session_name, window_index):
                     try:
-                        # Send '--continue'
+                        # Use send-claude-message.sh to send '--continue'
+                        target_window = f"{session_name}:{window_index}"
+                        cmd = [send_script, target_window, "--continue"]
+
+                        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                        continued_count += 1
+                        session_continued += 1
+                        print(f"✅ Sent '--continue' to {target_window} via send-claude-message.sh")
+
+                        # Add a small delay between windows to avoid overwhelming
+                        time.sleep(1.0)
+
+                    except subprocess.CalledProcessError as e:
+                        print(f"❌ Error sending to {session_name}:{window_index} via send-claude-message.sh: {e}")
+                        print(f"   Script output: {e.stdout if hasattr(e, 'stdout') else 'N/A'}")
+                        print(f"   Script error: {e.stderr if hasattr(e, 'stderr') else 'N/A'}")
+                    except Exception as e:
+                        print(f"❌ Unexpected error sending to {session_name}:{window_index}: {e}")
+                else:
+                    print(f"⏭️  Skipped {session_name}:{window_index} (not Claude)")
+
+            if session_continued > 0:
+                print(f"📊 Session '{session_name}': {session_continued} Claude windows continued")
+
+        print(f"🚀 Total: Sent '--continue' to {continued_count} Claude windows across {len(sessions)} sessions")
+
+    def _send_continue_direct(self):
+        """Fallback method using direct tmux commands if send-claude-message.sh is not available."""
+        sessions = self.get_all_sessions()
+        continued_count = 0
+
+        print(f"🔄 Using direct tmux commands as fallback...")
+
+        for session_name in sessions:
+            windows = self.get_session_windows(session_name)
+            session_continued = 0
+
+            for window_index in windows:
+                if self.is_claude_window(session_name, window_index):
+                    try:
+                        # Send '--continue' directly
                         subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "--continue"])
                         time.sleep(0.5)
                         # Send Enter
                         subprocess.run(["tmux", "send-keys", "-t", f"{session_name}:{window_index}", "Enter"])
                         continued_count += 1
                         session_continued += 1
-                        print(f"✅ Sent '--continue' to {session_name}:{window_index}")
+                        print(f"✅ Sent '--continue' to {session_name}:{window_index} (direct)")
 
-                        # Add a small delay between windows to avoid overwhelming
                         time.sleep(1.0)
 
                     except subprocess.CalledProcessError as e:
@@ -263,7 +311,7 @@ def main():
             print("")
             print("Arguments:")
             print("  check_interval    Seconds between checks (default: 30)")
-            print("  --continue-all    Send '--continue' to all Claude sessions")
+            print("  --continue-all    Send '--continue' to all Claude sessions via send-claude-message.sh")
             print("  --clear-lock      Clear scheduling lock file")
             print("")
             print("Examples:")
