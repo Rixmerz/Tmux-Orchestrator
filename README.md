@@ -1,13 +1,63 @@
 ![Orchestrator Hero](/Orchestrator.png)
 
-**Run AI agents 24/7 while you sleep** - The Tmux Orchestrator enables Claude agents to work autonomously, schedule their own check-ins, and coordinate across multiple projects without human intervention.
+**Run AI agents 24/7 while you sleep** - The Enhanced Tmux Orchestrator enables Claude agents to work autonomously, schedule their own check-ins, and coordinate across multiple projects without human intervention.
+
+## ✨ Enhanced Features (Consolidated Fork)
+
+This enhanced version consolidates multiple advanced features for superior autonomous operation:
+
+- **🤖 Claude Auto-Responder** - Automatic confirmation handling for unattended operation
+- **🚨 Claude Limit Monitor** - Intelligent usage limit detection with auto-continuation
+- **🎛️ Granular Auto-Responder Presets** - Role-specific automation configurations
+- **🔊 Reactivation Audio System** - Audio notifications for bot reactivation events
+- **📚 Modular Knowledge Base** - Organized documentation system
+- **⚡ Exception-based Error Handling** - Robust error management in tmux operations
 
 ## 🤖 Key Capabilities & Autonomous Features
 
 - **Self-trigger** - Agents schedule their own check-ins and continue work autonomously
-- **Coordinate** - Project managers assign tasks to engineers across multiple codebases  
+- **Coordinate** - Project managers assign tasks to engineers across multiple codebases
 - **Persist** - Work continues even when you close your laptop
 - **Scale** - Run multiple teams working on different projects simultaneously
+- **Auto-recover** - Intelligent limit detection and automatic continuation
+- **Audio-notify** - Sound alerts for important reactivation events
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.7+
+- tmux
+- `pexpect` library: `pip install pexpect`
+- Optional: `ffmpeg` for enhanced audio features
+
+### Basic Setup
+```bash
+# Clone the enhanced fork
+git clone https://github.com/Rixmerz/Tmux-Orchestrator.git
+cd Tmux-Orchestrator
+
+# Install dependencies
+pip install pexpect
+
+# Test basic functionality
+python3 tmux_utils.py
+
+# Start auto-responder for current session
+./start_auto_responder.sh $(tmux display-message -p "#{session_name}")
+
+# Start limit monitor
+./start_limit_monitor.sh
+```
+
+### Audio Setup (Optional)
+```bash
+# Install ffmpeg for enhanced audio features
+brew install ffmpeg  # macOS
+apt install ffmpeg   # Linux
+
+# Test audio system
+python3 test_reactivation_audio.py
+```
 
 ## 🏗️ Architecture
 
@@ -366,20 +416,33 @@ python3 test_reactivation_audio.py
 - Current default: 20% volume for non-intrusive notifications
 ## 📚 Core Files
 
+### 🔧 Core System
+- `tmux_utils.py` - Enhanced tmux interaction utilities with exception handling
 - `send-claude-message.sh` - Simplified agent communication script
 - `schedule_with_note.sh` - Self-scheduling functionality
-<<<<<<< HEAD
+
+### 🤖 Auto-Responder System
 - `claude_auto_responder.py` - Automatic prompt response system
 - `start_auto_responder.sh` - Auto-responder launcher script
+- `integrated_auto_responder.py` - Integrated auto-responder with advanced features
+- `permission_presets.py` - Granular permission presets configuration
+- `enable_auto_responder.sh` - Quick auto-responder enablement script
+
+### 🚨 Limit Monitoring
 - `claude_limit_monitor.py` - Usage limit detection and auto-continuation
 - `start_limit_monitor.sh` - Limit monitor launcher script
 - `test_limit_detection.py` - Testing suite for limit detection
+
+### 🔊 Audio System
 - `reactivation_audio_player.py` - Audio notification system for bot reactivation
 - `test_reactivation_audio.py` - Comprehensive audio system testing
 - `reactivation_audio/` - Audio files folder with documentation
-- `tmux_utils.py` - Tmux interaction utilities
+
+### 📚 Documentation
+- `README.md` - This comprehensive guide
 - `CLAUDE.md` - Agent behavior instructions
 - `LEARNINGS.md` - Accumulated knowledge base
+- `docs/` - Modular documentation system
 
 ## 🤝 Contributing & Optimization
 
@@ -395,6 +458,21 @@ Key areas for enhancement:
 - Agent communication patterns
 - Cross-project coordination
 - Novel automation workflows
+
+## 🍴 Enhanced Fork Information
+
+This is an enhanced and actively maintained fork of the original Tmux Orchestrator project. The original repository appeared to be inactive, so this fork consolidates and preserves all the valuable improvements and features developed over time.
+
+### What's New in This Fork
+- **Consolidated Features**: All advanced features from multiple branches unified
+- **Enhanced Documentation**: Comprehensive guides and modular knowledge base
+- **Active Maintenance**: Regular updates and improvements
+- **Clean Codebase**: Removed project-specific clutter, focused on core functionality
+
+### Credits
+- Original Tmux Orchestrator concept and foundation
+- Enhanced and maintained by [Rixmerz](https://github.com/Rixmerz)
+- Community contributions and optimizations
 
 ## 📄 License
 
