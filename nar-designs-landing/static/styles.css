@@ -1,0 +1,313 @@
+@tailwind base;
+@tailwind components; 
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 2000s Emo Dark Indie Palette */
+    --color-void-black: #000000;
+    --color-charcoal-gray: #1a1a1a;
+    --color-blood-red: #CC0000;
+    --color-toxic-purple: #6600CC;
+    --color-neon-pink: #FF0099;
+    --color-acid-green: #00FF00;
+    --color-ash-white: #CCCCCC;
+    --color-rust-orange: #FF6600;
+  }
+  
+  body {
+    background-color: var(--color-void-black);
+    color: var(--color-ash-white);
+    font-family: "Courier New", "Lucida Console", monospace, Verdana, Arial, sans-serif;
+    line-height: 1.3;
+    letter-spacing: 0.5px;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+  }
+
+  img, svg {
+    display: block;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+
+  button {
+    color: inherit;
+    cursor: pointer;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 1em;
+  }
+}
+
+@layer components {
+  /* 2000s EMO DARK INDIE COMPONENTS */
+  
+  .btn-primary {
+    background: var(--color-toxic-purple);
+    color: var(--color-ash-white);
+    border: 2px solid var(--color-neon-pink);
+    padding: 8px 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    font-family: "Lucida Console", monospace;
+    box-shadow: 2px 2px 0px var(--color-neon-pink);
+  }
+  
+  .btn-primary:hover {
+    background: var(--color-neon-pink);
+    color: var(--color-void-black);
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--color-toxic-purple);
+  }
+  
+  .btn-secondary {
+    background: var(--color-charcoal-gray);
+    color: var(--color-acid-green);
+    border: 2px solid var(--color-acid-green);
+    padding: 8px 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 11px;
+    font-family: "Lucida Console", monospace;
+    box-shadow: 2px 2px 0px var(--color-acid-green);
+  }
+  
+  .btn-secondary:hover {
+    background: var(--color-acid-green);
+    color: var(--color-void-black);
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--color-charcoal-gray);
+  }
+  
+  .btn-ghost {
+    background: transparent;
+    color: var(--color-ash-white);
+    border: 1px solid var(--color-ash-white);
+    padding: 8px 16px;
+    font-weight: normal;
+    text-transform: lowercase;
+    font-size: 12px;
+    font-family: "Courier New", monospace;
+  }
+  
+  .btn-ghost:hover {
+    background: var(--color-ash-white);
+    color: var(--color-void-black);
+  }
+  
+  .text-accent {
+    color: var(--color-blood-red);
+  }
+  
+  .text-primary {
+    color: var(--color-toxic-purple);
+  }
+  
+  .text-secondary {
+    color: var(--color-acid-green);
+  }
+  
+  .bg-dark {
+    background-color: var(--color-void-black);
+  }
+  
+  .bg-soft-gray {
+    background-color: var(--color-charcoal-gray);
+  }
+  
+  .card {
+    background: var(--color-charcoal-gray);
+    border: 2px solid var(--color-ash-white);
+    padding: 20px;
+    box-shadow: 4px 4px 0px var(--color-toxic-purple);
+  }
+  
+  .input {
+    width: 100%;
+    padding: 8px 12px;
+    background: var(--color-void-black);
+    border: 2px solid var(--color-ash-white);
+    color: var(--color-ash-white);
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+  }
+  
+  .input:focus {
+    border-color: var(--color-neon-pink);
+    outline: none;
+    box-shadow: 0 0 5px var(--color-neon-pink);
+  }
+  
+  .hero-gradient {
+    background: var(--color-void-black);
+    background-image: 
+      radial-gradient(circle at 20% 80%, var(--color-toxic-purple) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, var(--color-blood-red) 0%, transparent 50%);
+    background-size: 100% 100%;
+  }
+  
+  /* 2000s EMO GLITCH EFFECTS */
+  .glow-toxic {
+    text-shadow: 0 0 5px var(--color-toxic-purple), 0 0 10px var(--color-neon-pink);
+    animation: toxic-glitch 0.5s infinite alternate;
+  }
+  
+  .glow-acid {
+    text-shadow: 0 0 5px var(--color-acid-green);
+    animation: acid-pulse 1s infinite;
+  }
+  
+  .glow-blood {
+    text-shadow: 0 0 5px var(--color-blood-red);
+    animation: blood-flicker 0.3s infinite alternate;
+  }
+  
+  /* EMO DARK AESTHETIC COMPONENTS */
+  .emo-card {
+    background: var(--color-void-black);
+    border: 2px solid var(--color-toxic-purple);
+    box-shadow: 
+      4px 4px 0px var(--color-neon-pink),
+      inset 0 0 10px rgba(102, 0, 204, 0.3);
+    padding: 20px;
+    position: relative;
+  }
+  
+  .emo-card:before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--color-neon-pink), var(--color-acid-green));
+    z-index: -1;
+    opacity: 0.1;
+  }
+  
+  .indie-button {
+    background: var(--color-void-black);
+    border: 2px solid var(--color-neon-pink);
+    color: var(--color-ash-white);
+    padding: 12px 20px;
+    font-family: "Courier New", monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    box-shadow: 3px 3px 0px var(--color-toxic-purple);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .indie-button:hover {
+    background: var(--color-neon-pink);
+    color: var(--color-void-black);
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0px var(--color-toxic-purple);
+  }
+  
+  .section-divider {
+    height: 4px;
+    background: var(--color-void-black);
+    border-top: 2px solid var(--color-neon-pink);
+    border-bottom: 2px solid var(--color-acid-green);
+    margin: 3rem 0;
+    position: relative;
+  }
+  
+  .section-divider:after {
+    content: "◆ ◇ ◆ ◇ ◆";
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--color-void-black);
+    color: var(--color-toxic-purple);
+    font-size: 12px;
+    padding: 0 10px;
+    font-family: "Courier New", monospace;
+  }
+}
+
+/* 2000s EMO DARK INDIE ANIMATIONS */
+@keyframes toxic-glitch {
+  0% { 
+    text-shadow: 0 0 5px var(--color-toxic-purple), 0 0 10px var(--color-neon-pink);
+    transform: translateX(0);
+  }
+  100% { 
+    text-shadow: 0 0 8px var(--color-neon-pink), 0 0 12px var(--color-toxic-purple);
+    transform: translateX(-2px);
+  }
+}
+
+@keyframes acid-pulse {
+  0%, 100% { 
+    text-shadow: 0 0 5px var(--color-acid-green);
+    color: var(--color-acid-green);
+  }
+  50% { 
+    text-shadow: 0 0 15px var(--color-acid-green);
+    color: var(--color-ash-white);
+  }
+}
+
+@keyframes blood-flicker {
+  0% { 
+    text-shadow: 0 0 5px var(--color-blood-red);
+    opacity: 1;
+  }
+  100% { 
+    text-shadow: 0 0 10px var(--color-blood-red);
+    opacity: 0.7;
+  }
+}
+
+@keyframes pixel-drift {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px) rotateX(10deg); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) rotateX(0deg); 
+  }
+}
+
+@keyframes emo-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotateZ(-1deg); }
+  75% { transform: translateX(2px) rotateZ(1deg); }
+}
+
+.animate-pixel-in {
+  animation: pixel-drift 0.8s ease-out forwards;
+}
+
+.animate-emo-shake {
+  animation: emo-shake 0.3s ease-in-out;
+}
+
+.animate-toxic-glitch {
+  animation: toxic-glitch 0.5s infinite alternate;
+}
