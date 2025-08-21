@@ -1,0 +1,2 @@
+# Core dependencies for Enhanced Tmux Orchestrator
+pexpect>=4.8.0
