@@ -294,13 +294,13 @@ The orchestrator can share insights between projects:
 - "Authentication is working in Project A, use same pattern in Project B"
 - "Performance issue found in shared library, fix across all projects"
 
-<<<<<<< HEAD
-## 🤖 Claude Auto-Responder
+## 🤖 Claude Auto-Responder System
 
-For fully autonomous operation, the Claude Auto-Responder automatically handles confirmation prompts:
+The Enhanced Tmux Orchestrator provides **two complementary approaches** for handling Claude confirmation prompts:
 
-**Prerequisites:**
-Before starting the auto-responder, ensure each Claude session in your tmux windows has **"auto-accept edits on"** enabled. This is crucial for the auto-responder to work properly with file modifications.
+### **🔧 Approach 1: External Auto-Responder (Separate Terminal)**
+
+Runs a Python script in a separate tmux terminal that monitors and responds to prompts:
 
 ```bash
 # Start auto-responder for a session (session name is required)
@@ -320,11 +320,44 @@ python3 claude_auto_responder.py my-session
 - Runs in background without interrupting workflow
 - Configurable check intervals
 
-**Use Cases:**
-- Long-running autonomous agents
-- Overnight development sessions
-- Unattended CI/CD operations
-- Batch processing workflows
+### **🎯 Approach 2: Permission Presets (Integrated)**
+
+Claude uses internal presets to decide what permissions to grant automatically:
+
+```bash
+# Enable auto-responder with specific preset for current session
+./enable_auto_responder.sh pm_orchestrator
+
+# Available presets:
+./enable_auto_responder.sh safe_development
+./enable_auto_responder.sh conservative
+./enable_auto_responder.sh autonomous_agent
+
+# List all available presets with descriptions
+python3 permission_presets.py
+```
+
+**Permission Presets:**
+- **`pm_orchestrator`** - PM optimized (file ops, confirmations, NO commands)
+- **`safe_development`** - Developer safe (files, confirmations, manual commands)
+- **`conservative`** - Minimal automation (basic confirmations only)
+- **`autonomous_agent`** - Full automation (everything except git)
+
+### **🤔 Which Approach to Use?**
+
+**Use External Auto-Responder when:**
+- You want to monitor multiple Claude sessions simultaneously
+- You need a "blanket" solution that works with any Claude instance
+- You're running long-term autonomous operations
+- You want to keep the auto-responder separate from Claude's logic
+
+**Use Permission Presets when:**
+- You want Claude to make intelligent decisions about permissions
+- You need role-specific behavior (PM vs Developer vs QA)
+- You want fine-grained control over what gets automated
+- You prefer Claude to understand its own permission boundaries
+
+**💡 Pro Tip:** You can use both approaches together! Run external auto-responder for basic confirmations while Claude uses presets for intelligent decision-making.
 
 ## 🚨 Claude Limit Monitor
 
@@ -357,26 +390,6 @@ Automatically handles Claude usage limits by scheduling continuation when limits
 - Unattended long-running tasks
 - Multi-session orchestration
 
-## 🎛️ Granular Auto-Responder Presets
-
-Enhanced auto-responder with role-specific preset configurations:
-
-**Granular Presets:**
-- `pm_orchestrator`: PM-optimized (file ops, confirmations, no commands)
-- `safe_development`: Developer-safe (files, confirmations, manual commands)
-- `conservative`: Minimal automation (basic confirmations only)
-- `autonomous_agent`: Full automation (everything except git)
-
-**Example PM + Engineer Workflow:**
-```bash
-# PM enables auto-responder for management tasks
-/enable-auto pm
-
-# PM creates engineer and sets up conservative auto-responder
-# "You are a project manager, create an engineer in window 2 and say him:
-# '/enable-auto conservative' and after say him create denofresh default
-# project for now, schedule in 10 minutes to check engineer progress"
-```
 ## 🔊 Reactivation Audio System
 
 The Tmux Orchestrator includes an advanced audio notification system for bot reactivation events:
